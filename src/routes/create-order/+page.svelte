@@ -231,7 +231,7 @@
   function startTTLTimer() {
     if (ttlTimer) clearInterval(ttlTimer);
     ttlTimer = setInterval(async () => {
-      await cleanupExpiredCarts({ ttlMinutes });
+      await cleanupExpiredCarts(ttlMinutes);
       await loadParkedCarts();
     }, 60000);
   }
@@ -272,23 +272,23 @@
 
 <div class="create-order-container">
   <div class="search-area">
-    <div class="search-bar-container">
-      <img src="/input_search_field.svg" alt="Search Field" class="icon-guide" />
-      <img src="/scan_barcode.svg" alt="Scan Barcode" class="icon-guide" />
-      <input
-        id="search-input"
-        type="text"
-        bind:value={searchQuery}
-        placeholder="Scan barcode or search by name..."
-        class="search-bar"
-        on:input={handleSearch}
-      />
-    </div>
     <div class="search-table-wrapper">
       <table class="search-results">
         <thead>
           <tr>
-            <th class="product-col">Product</th>
+            <th class="product-col">
+              <div class="search-header">
+                <img src="/scan_barcode.svg" alt="Scan Barcode" class="icon-guide" />
+                <input
+                  id="search-input"
+                  type="text"
+                  bind:value={searchQuery}
+                  placeholder="Scan barcode or search by name..."
+                  class="search-bar"
+                  on:input={handleSearch}
+                />
+              </div>
+            </th>
             <th class="price-col">Single Price</th>
             <th class="add-col"> </th>
             <th class="price-col">Bulk Price</th>
@@ -341,77 +341,82 @@
   </div>
   <div class="cart-area">
     <div class="cart-header">
-      <span>Cart <img src="/cart-icon.svg" alt="Cart" class="header-icon" /></span>
+      <span>CART</span>
     </div>
-    <div class="cart-table-wrapper">
-      <table class="cart-table">
-        <thead>
-          <tr>
-            <th>Product</th>
-            <th>Price</th>
-            <th>Quantity</th>
-            <th>Discount</th>
-            <th style="text-align: right;">Total</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {#if tempCart.length === 0}
-            <tr><td colspan="6" class="empty-cart">Cart is empty</td></tr>
-          {:else}
-            {#each tempCart as item}
-              <tr style="height: 50px;">
-                <td><span class="cart-name">{item.product_name}</span></td>
-                <td>{formatPrice(item.unit_price)}</td>
-                <td>
-                  <div class="qty-controls">
-                    <span class="qty-mod" style="color: #f44336;" on:click={() => handleUpdateQuantity(item, item.quantity - 1)}>-</span>
-                    <input type="number" class="qty-input" value={item.quantity} min="1" on:change={(e) => handleUpdateQuantity(item, Number(e.target.value))} />
-                    <span class="qty-mod" style="color: #4CAF50;" on:click={() => handleUpdateQuantity(item, item.quantity + 1)}>+</span>
-                  </div>
-                </td>
-                <td>
-                  <input type="number" class="discount-input" value={item.discount || 0} min="0" on:change={(e) => handleUpdateDiscount(item, Number(e.target.value))} />
-                </td>
-                <td style="text-align: right;">{formatPrice(item.quantity * item.unit_price - (item.discount || 0))}</td>
-                <td><span class="delete-mod" style="color: #f44336; font-size: 1.5rem;" on:click={() => handleRemoveItem(item)}>×</span></td>
+    <div class="cart-content">
+      <div class="cart-left">
+        <div class="cart-table-wrapper">
+          <table class="cart-table">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th style="text-align: right;">Total</th>
+                <th></th>
               </tr>
-            {/each}
-          {/if}
-        </tbody>
-      </table>
-    </div>
-    <div class="cart-summary">
-      <div class="cart-summary-row"><span>Subtotal</span><span>{formatPrice(calculateTotal())}</span></div>
-      <div class="cart-summary-row"><span>VAT ({(vatRate * 100).toFixed(0)}%)</span><span>{formatPrice(calculateVAT())}</span></div>
-      <div class="cart-summary-row cart-summary-final"><span>Total</span><span>{formatPrice(calculateFinalTotal())}</span></div>
-    </div>
-    <div class="cart-actions">
-      <button class="cart-btn border-only" on:click={handleCheckoutCash}>
-        <img src="/pay_with-cash.svg" alt="Cash" class="action-icon" /> Cash
-      </button>
-      <button class="cart-btn border-only" on:click={handleCheckoutQR}>
-        <img src="/pay_with-QR.svg" alt="Payment QR" class="action-icon" /> Payment QR
-      </button>
-      <button class="cart-btn border-only park" on:click={handleParkCart}>
-        <img src="/park-icon.svg" alt="Park" class="action-icon" /> Park Cart
-      </button>
-      <button class="cart-btn border-only cancel" on:click={handleClearCart}>
-        <img src="/cancel-icon.svg" alt="Cancel" class="action-icon" /> Cancel Order
-      </button>
+            </thead>
+            <tbody>
+              {#if tempCart.length === 0}
+                <tr><td colspan="5" class="empty-cart">Cart is empty</td></tr>
+              {:else}
+                {#each tempCart.slice().reverse() as item}
+                  <tr style="height: 50px;">
+                    <td><span class="cart-name">{item.product_name}</span></td>
+                    <td>{formatPrice(item.unit_price)}</td>
+                    <td>
+                      <div class="qty-controls">
+                        <span class="qty-mod" style="color: #f44336;" on:click={() => handleUpdateQuantity(item, item.quantity - 1)}>-</span>
+                        <input type="number" class="qty-input" value={item.quantity} min="1" on:change={(e) => {
+                          const target = e.target as HTMLInputElement;
+                          if (target) handleUpdateQuantity(item, Number(target.value));
+                        }} />
+                        <span class="qty-mod" style="color: #4CAF50;" on:click={() => handleUpdateQuantity(item, item.quantity + 1)}>+</span>
+                      </div>
+                    </td>
+                    <td style="text-align: right;">{formatPrice(item.quantity * item.unit_price - (item.discount || 0))}</td>
+                    <td><span class="delete-mod" style="color: #f44336; font-size: 1.5rem;" on:click={() => handleRemoveItem(item)}>×</span></td>
+                  </tr>
+                {/each}
+              {/if}
+            </tbody>
+          </table>
+        </div>
+        <div class="cart-summary">
+          <div class="cart-summary-row"><span>Subtotal</span><span>{formatPrice(calculateTotal())}</span></div>
+          <div class="cart-summary-row"><span>VAT ({(vatRate * 100).toFixed(0)}%)</span><span>{formatPrice(calculateVAT())}</span></div>
+          <div class="cart-summary-row cart-summary-final"><span>Total</span><span>{formatPrice(calculateFinalTotal())}</span></div>
+        </div>
+      </div>
+      <div class="cart-right">
+        <div class="cart-actions">
+          <button class="cart-btn" on:click={handleCheckoutCash}>
+            <img src="/pay_with_cash.svg" alt="Cash" class="action-icon" /> Cash
+          </button>
+          <button class="cart-btn" on:click={handleCheckoutQR}>
+            <img src="/pay_with_QR.svg" alt="Payment QR" class="action-icon" /> Payment QR
+          </button>
+          <button class="cart-btn" on:click={handleParkCart}>
+            <img src="/cart.svg" alt="Park" class="action-icon" /> Park Cart
+          </button>
+          <button class="cart-btn" on:click={handleClearCart}>
+            <img src="/cancel.svg" alt="Cancel" class="action-icon" /> Cancel Order
+          </button>
+        </div>
+        <div class="parked-carts-area">
+          <h3>Parked Carts</h3>
+          {#each parkedCarts as parked}
+            <div class="parked-cart-row">
+              <span>{parked.cart_name} ({parked.added_at})</span>
+              <button on:click={() => handleActivateCart(parked.cart_id)}>Activate</button>
+            </div>
+          {/each}
+        </div>
+      </div>
     </div>
     {#if addError}
       <div class="add-error">{addError}</div>
     {/if}
-    <div class="parked-carts-area">
-      <h3>Parked Carts</h3>
-      {#each parkedCarts as parked}
-        <div class="parked-cart-row">
-          <span>{parked.cart_name} ({parked.added_at})</span>
-          <button on:click={() => handleActivateCart(parked.cart_id)}>Activate</button>
-        </div>
-      {/each}
-    </div>
   </div>
 </div>
 
@@ -446,7 +451,7 @@
     display: flex;
     flex-direction: row;
     width: 100%;
-    height: 80vh;
+    height: calc(100vh - 60px);
     gap: 2rem;
     margin: 0 30px;
   }
@@ -458,14 +463,14 @@
     border: 1px solid #ddd;
     padding: 10px;
   }
-  .search-bar-container {
+  .search-header {
     display: flex;
     align-items: center;
     gap: 0.5rem;
   }
   .icon-guide {
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
     pointer-events: none; /* Unclickable */
   }
   .search-bar {
@@ -479,6 +484,7 @@
   .search-table-wrapper {
     flex: 1;
     overflow-y: auto;
+    height: calc(100vh - 200px);
   }
   .search-results {
     width: 100%;
@@ -490,7 +496,7 @@
     text-align: left;
     border-bottom: 1px solid #ddd;
   }
-  .product-col { width: 40%; }
+  .product-col { width: calc(40% - 50px); }
   .price-col { width: 20%; }
   .add-col { width: 10%; }
   .no-products { text-align: center; color: #666; }
@@ -511,30 +517,44 @@
   .price { font-weight: bold; }
   .unit { color: #aaa; }
   .cart-area {
-    flex: 1;
+    width: 400px;
     display: flex;
     flex-direction: column;
     gap: 1rem;
     border: 1px solid #ddd;
     padding: 10px;
+    margin-right: 30px;
+  }
+  .cart-content {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    flex: 1;
+  }
+  .cart-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .cart-right {
+    width: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
   }
   .cart-header {
     background-color: white;
     color: #333;
-    padding: 0.25rem;
-    font-size: 1.1rem;
+    padding: 0.5rem;
+    font-size: 1.2rem;
+    font-weight: bold;
     border-bottom: 1px solid #ddd;
-  }
-  .header-icon {
-    width: 16px;
-    height: 16px;
-    vertical-align: middle;
-    margin-left: 5px;
+    text-align: center;
   }
   .cart-table-wrapper {
     flex: 1;
     overflow-y: auto;
-    max-height: 300px;
+    height: calc(100vh - 300px);
   }
   .cart-table {
     width: 100%;
@@ -566,11 +586,6 @@
     padding: 0.25rem;
     text-align: center;
   }
-  .discount-input {
-    width: 4rem;
-    padding: 0.25rem;
-    text-align: center;
-  }
   .delete-mod {
     font-size: 1.5rem;
     cursor: pointer;
@@ -579,6 +594,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
+    margin-top: 1rem;
   }
   .cart-summary-row {
     display: flex;
@@ -589,35 +605,63 @@
   }
   .cart-actions {
     display: flex;
+    flex-direction: column;
     gap: 0.5rem;
   }
   .cart-btn {
-    padding: 0.5rem 1rem;
+    padding: 0.75rem 1rem;
     color: #333;
     border: 1px solid #ccc;
-    background: none;
+    background: white;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    border-radius: 4px;
+    transition: background-color 0.2s;
   }
-  .cart-btn.border-only.park { }
-  .cart-btn.border-only.cancel { }
+  .cart-btn:hover {
+    background-color: #f5f5f5;
+  }
+  .cart-btn img {
+    width: 24px;
+    height: 24px;
+  }
+  .cart-btn:nth-child(1) img {
+    filter: brightness(0) saturate(100%) invert(48%) sepia(79%) saturate(2476%) hue-rotate(86deg) brightness(118%) contrast(119%);
+  }
+  .cart-btn:nth-child(2) img {
+    filter: brightness(0) saturate(100%) invert(27%) sepia(51%) saturate(2878%) hue-rotate(346deg) brightness(104%) contrast(97%);
+  }
+  .cart-btn:nth-child(3) img {
+    filter: brightness(0) saturate(100%) invert(27%) sepia(0%) saturate(0%) hue-rotate(93deg) brightness(104%) contrast(86%);
+  }
+  .cart-btn:nth-child(4) img {
+    filter: brightness(0) saturate(100%) invert(27%) sepia(51%) saturate(2878%) hue-rotate(346deg) brightness(104%) contrast(97%);
+  }
   .action-icon {
-    width: 16px;
-    height: 16px;
+    width: 24px;
+    height: 24px;
     vertical-align: middle;
-    margin-right: 5px;
   }
   .empty-cart { text-align: center; color: #666; }
   .add-error { color: red; }
   .parked-carts-area {
-    margin-top: 1rem;
     border-top: 1px solid #ddd;
     padding-top: 10px;
+  }
+  .parked-carts-area h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
   }
   .parked-cart-row {
     display: flex;
     justify-content: space-between;
     padding: 0.5rem;
     border-bottom: 1px solid #ddd;
+    font-size: 0.8rem;
   }
   .cart-name-prompt-modal {
     position: fixed;

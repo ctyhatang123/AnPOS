@@ -65,17 +65,18 @@
     align-items: center;
     justify-content: flex-start;
     padding: 0 2rem;
-    height: 40px;
-    background: linear-gradient(90deg, #7856D1 0%, #401E98 100%);
-    color: white;
+    height: 30px;
+    background: white;
+    color: #333;
     font-weight: 600;
-    font-size: 1rem;
+    font-size: 0.9rem;
     letter-spacing: 0.05em;
-    box-shadow: 0 2px 8px rgba(64,30,152,0.08);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    border-bottom: 1px solid #ddd;
   }
   .anpos-title {
     flex: 0 0 auto;
-    font-size: 1.2em;
+    font-size: 1.1em;
     margin-right: 2rem;
     font-weight: bold;
     letter-spacing: 0.1em;
@@ -87,41 +88,41 @@
     gap: 2rem;
   }
   .anpos-tabs a {
-    color: white;
+    color: #333;
     text-decoration: none;
-    padding: 0.3em 1em;
-    border-radius: 999px;
+    padding: 0.2em 0.8em;
+    border-radius: 4px;
     transition: background 0.2s, color 0.2s;
-    font-size: 1em;
-    opacity: 0.85;
+    font-size: 0.9em;
+    opacity: 0.8;
   }
   .anpos-tabs a.active-tab {
-    background: rgba(255,255,255,0.18);
-    color: #fff;
+    background: #f0f0f0;
+    color: #333;
     opacity: 1;
     font-weight: bold;
   }
   .logout-btn {
     flex: 0 0 auto;
     margin-left: auto;
-    background: rgba(255,255,255,0.18);
-    color: #fff;
+    background: #f0f0f0;
+    color: #333;
     border: none;
-    border-radius: 999px;
-    padding: 0.3em 1.2em;
-    font-size: 1em;
+    border-radius: 4px;
+    padding: 0.2em 0.8em;
+    font-size: 0.9em;
     font-weight: 600;
     cursor: pointer;
     transition: background 0.2s;
-    opacity: 0.85;
+    opacity: 0.8;
   }
   .logout-btn:hover {
-    background: rgba(255,255,255,0.32);
+    background: #e0e0e0;
     opacity: 1;
   }
   .anpos-main {
     width: 100vw;
-    height: calc(100vh - 40px);
+    height: calc(100vh - 30px);
     margin: 0;
     padding-top: 0.5rem;
     box-sizing: border-box;
